@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Use a private
+ssh -i ~/.ssh/school  ubuntu@	54.236.27.197
