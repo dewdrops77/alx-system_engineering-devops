@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
-# Install the load balancer
+# shellcheck disable=SC2016
+# installing and config load balancer
+apt-get -y install software-properties-common
+add-apt-repository -y ppa:vbernat/haproxy-2.0
+apt-get -y update
+apt-get -y install haproxy=2.0.\*
 
+echo "ENABLED=1" >> /etc/default/haproxy
 
-sudo apt-get -y update
-sudo apt-get -y upgrade
-sudo apt-get -y install haproxy
-sudo sed -i 's/ENABLED=0/ENABLED=1/' /etc/default/haproxy
-sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.original
-sudo sed -i "$ a\listen 81238-lb-01\n\tbind *:80\n\tmode http\n\tbalance roundrobin\n\toption httpclose\n\toption forwardfor\n\tserver 81238-web-02 54.146.85.239:80 check\n\tserver 81238-web-01 54.236.27.197:80 check" /etc/haproxy/haproxy.cfg
-sudo service haproxy start
+echo "
+frontend load_balancer
+    bind *:80
+    mode http
+    default_backend webserver
+backend webserver
+    balance roundrobin
+    server 81238-web-01 54.236.27.197:80 check
+    server 81238-web-02 54.146.85.239:80 check
+" >> /etc/haproxy/haproxy.cfg
+service haproxy restart
